@@ -5,6 +5,7 @@ import {
   FormLabel,
   Input,
   Link,
+  Select,
   Stack,
   useToast,
 } from '@chakra-ui/react'
@@ -15,6 +16,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { authApi } from '@/features/auth/api'
 import { useAuthStore } from '@/store/authStore'
+import { TIMEZONES } from '@/constants/timezones'
 
 const schema = z.object({
   full_name: z.string().min(2, 'Enter your name'),
@@ -30,6 +32,10 @@ export function RegisterPage() {
   const toast = useToast()
   const setSession = useAuthStore((state) => state.setSession)
   const setUser = useAuthStore((state) => state.setUser)
+  const resolvedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const defaultTimezone = TIMEZONES.includes(resolvedTimezone ?? '')
+    ? resolvedTimezone
+    : 'UTC'
 
   const {
     register,
@@ -37,7 +43,7 @@ export function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { timezone: 'UTC' },
+    defaultValues: { timezone: defaultTimezone },
   })
 
   const mutation = useMutation({
@@ -83,7 +89,13 @@ export function RegisterPage() {
         </FormControl>
         <FormControl isInvalid={Boolean(errors.timezone)}>
           <FormLabel>Timezone</FormLabel>
-          <Input {...register('timezone')} />
+          <Select {...register('timezone')}>
+            {TIMEZONES.map((zone) => (
+              <option key={zone} value={zone}>
+                {zone}
+              </option>
+            ))}
+          </Select>
           <FormErrorMessage>{errors.timezone?.message}</FormErrorMessage>
         </FormControl>
         <Button type="submit" colorScheme="purple" isLoading={mutation.isPending}>
