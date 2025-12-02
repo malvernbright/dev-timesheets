@@ -21,15 +21,20 @@ class AuthService:
         self.session = session
         self.users = UserRepository(session)
 
+    @staticmethod
+    def _normalize_email(email: str) -> str:
+        return email.strip().lower()
+
     async def register(self, data: RegisterRequest) -> User:
-        existing = await self.users.get_by_email(data.email)
+        normalized_email = self._normalize_email(data.email)
+        existing = await self.users.get_by_email(normalized_email)
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User with this email already exists",
             )
         user = User(
-            email=data.email,
+            email=normalized_email,
             full_name=data.full_name,
             timezone=data.timezone,
             hashed_password=hash_password(data.password),
@@ -40,7 +45,8 @@ class AuthService:
         return user
 
     async def login(self, data: LoginRequest) -> Token:
-        user = await self.users.get_by_email(data.email)
+        normalized_email = self._normalize_email(data.email)
+        user = await self.users.get_by_email(normalized_email)
         if not user or not verify_password(data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"

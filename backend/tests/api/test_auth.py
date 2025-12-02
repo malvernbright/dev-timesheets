@@ -28,3 +28,18 @@ async def test_duplicate_registration_fails(test_client):
     )
     assert response.status_code == 400
     assert "already" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_login_allows_mixed_case_email(test_client):
+    original_email = "MixedCase@Example.com"
+    await register_user(test_client, original_email)
+
+    response = await test_client.post(
+        "/api/auth/login",
+        json={"email": original_email.lower(), "password": "password123"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "access_token" in body
