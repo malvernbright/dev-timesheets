@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.env
+.github/
+.env.*
+
+# Node
+node_modules/
+frontend/dist/
+
+# Editors
+.vscode/
+.DS_Store
+
+# Poetry
+poetry.lock
+
+# Alembic
+backend/alembic/versions/*.pyc
